@@ -1,2 +1,11 @@
-import Router from "express"
-const userRotes = Router()
+import Router from "express";
+import authControllers from "../controllers/authControllers.js";
+
+const authRoutes = Router();
+
+authRoutes.post("/signup", authControllers.signup);
+authRoutes.post("/login", authControllers.login);
+authRoutes.post("/logout", authControllers.logout);
+authRoutes.post("/refresh", authControllers.refresh);
+
+export default authRoutes;

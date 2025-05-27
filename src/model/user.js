@@ -4,7 +4,7 @@ export const ROLES = {
   moderator: "instructor",
   admin: "admin",
 };
-const userSchema = new mongoose.Schema()(
+const userSchema = new mongoose.Schema(
   {
     name: { type: String, required: [true, "Name is required"] },
     username: {
