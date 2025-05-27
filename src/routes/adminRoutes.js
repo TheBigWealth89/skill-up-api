@@ -1,8 +1,8 @@
 import { Router } from "express";
-import { authorization } from "../middleware/authMiddleware";
-import { ROLES } from "../model/user";
-import authControllers from "../controllers/authControllers";
-import { checkRoles } from "../middleware/checkRole";
+import  {authorization}  from "../middleware/authMiddleware.js";
+import { ROLES } from "../model/user.js";
+import authControllers from "../controllers/authControllers.js";
+import { checkRoles } from "../middleware/checkRole.js";
 
 const adminRoutes = Router();
 adminRoutes.post(
@@ -12,4 +12,4 @@ adminRoutes.post(
   authControllers.getAllUsers
 );
 
-export default adminRoutes
+export default adminRoutes;

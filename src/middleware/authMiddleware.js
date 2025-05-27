@@ -1,5 +1,5 @@
 import jwt from "jsonwebtoken";
-import { verifyAccessToken } from "../utils/tokenUtils";
+import { verifyAccessToken } from "../utils/tokenUtils.js";
 
 export const authorization = async (
   req,
