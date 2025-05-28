@@ -73,10 +73,12 @@ class AuthController {
       const user = await User.findOne({
         $or: [{ email: cleanIdentifier }, { username: cleanIdentifier }],
       }).select("+password +failedLoginAttempts +lockUntil");
+
       console.log("User exists", user);
       // logger.info(user);
+
       // Timing attack-safe comparison
-      const dummyHash = await hash("dummy", 10);
+      const dummyHash = await hash("dummyHash", 10);
       if (!user) {
         //This ensures the compare function always runs, preventing timing attacks.
         await compare(password, dummyHash);
@@ -234,17 +236,6 @@ class AuthController {
       });
     } catch (error) {
       return res.status(500).json({ error: "Internal server error" });
-    }
-  }
-
-  async getAllUsers(req, res, next) {
-    try {
-      const users = await User.find();
-      res.status(200).json({
-        users: users,
-      });
-    } catch (error) {
-      next(error);
     }
   }
 }

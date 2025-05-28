@@ -2,7 +2,7 @@ import mongoose from "mongoose";
 import crypto from "crypto";
 import jwt from "jsonwebtoken"
 import config from "../config/config.js";
-import RedisServices from "../services/redisServices.js";
+import RedisService from "../services/redisServices.js";
 import RefreshToken from "../model/refreshToken.js";
 
 //Generate (access + refresh)

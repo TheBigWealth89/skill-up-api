@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 export const ROLES = {
   user: "user",
-  moderator: "instructor",
+  instructor: "instructor",
   admin: "admin",
 };
 const userSchema = new mongoose.Schema(
