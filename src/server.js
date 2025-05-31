@@ -5,9 +5,10 @@ import cookieParser from "cookie-parser";
 import authRoutes from "./routes/user.js";
 import adminRoutes from "./routes/admin.js";
 import courseRoutes from "./routes/courseRoutes.js";
+import enrollRoutes from "./routes/enrollRoutes.js";
 import connectDB from "./lib/db.js";
 import redisServices from "./services/redisServices.js";
-import {globalErrorHandler} from "./middleware/errorHandlers.js"
+import { globalErrorHandler } from "./middleware/errorHandlers.js";
 
 dotenv.config();
 
@@ -32,10 +33,9 @@ connectDB();
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/course", courseRoutes);
+app.use("/api/enrollments", enrollRoutes);
 
 app.use(globalErrorHandler);
 app.listen(PORT, () =>
   console.log(`Server is running on http://localhost:${PORT}`)
 );
-
-

@@ -36,9 +36,9 @@ class RedisService {
     return result !== null;
   }
 
-  async removeToken(token) {
-    await this.client.del(token);
-  }
+  // async removeToken(token) {
+  //   await this.client.del(token);
+  // }
 }
 
 export default new RedisService();

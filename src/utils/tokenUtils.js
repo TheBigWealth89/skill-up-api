@@ -145,7 +145,7 @@ export const addToBlacklist = async (token) => {
       );
       console.log("Calculated TTL:", ttl);
       if (ttl > 0) {
-        await RedisServices.blacklistToken(token, ttl);
+        await RedisService.blacklistToken(token, ttl);
         console.log("Token successfully blacklisted");
       } else {
         console.log(

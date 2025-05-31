@@ -20,11 +20,13 @@ courseRoutes.post(
   courseController.createCourse
 );
 
-// courseRoutes.get(
-//   "/instructor/my-courses",
-//   authorize(["instructor"]),
-//   getInstructorCourses
-// );
+courseRoutes.get(
+  "/instructor/my-courses",
+  authorization,
+  checkRoles([ROLES.instructor]),
+  courseController.getInstructorCourses
+);
+
 courseRoutes.put(
   "/:id",
   checkRoles([ROLES.admin, ROLES.instructor]),
@@ -37,6 +39,7 @@ courseRoutes.patch(
   checkRoles([ROLES.admin]),
   courseController.approveCourse
 );
+
 courseRoutes.delete(
   "/:id",
   checkRoles(ROLES.admin),

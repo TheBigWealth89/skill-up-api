@@ -1,8 +1,13 @@
 import Course from "../model/course.js";
 class CourseController {
+  /**
+   * @desc    create a course
+   * @route   POST /api/course
+   * @access  instructor & admin
+   */
   async createCourse(req, res, next) {
     try {
-      if (!req.user) {
+      if (!req.user.userId) {
         return res.status(401).json({ message: "Not authenticated" });
       }
 
@@ -27,6 +32,12 @@ class CourseController {
     }
   }
 
+  /**
+   * @desc    Get a course
+   * @route   GET /api/course/:id
+   * @access  Public
+   */
+
   async getCourse(req, res, next) {
     try {
       const course = await Course.findById(req.params.id)
@@ -50,6 +61,11 @@ class CourseController {
     }
   }
 
+  /**
+   * @desc    update a course
+   * @route   PUT/api/course/:id
+   * @access   Owner
+   */
   async updateCourse(req, res, next) {
     try {
       const course = await Course.findById(req.params.id);
@@ -61,11 +77,7 @@ class CourseController {
       }
 
       // Check ownership (or admin role)
-      if (!course.createdBy.equals(req.user._id) && req.user.role !== "admin") {
-        return res.status(403).json({
-          error: "Not authorized to update this course",
-        });
-      }
+     
 
       // Prevent certain fields from being updated
       const { createdBy, isApproved, ...updates } = req.body;
@@ -84,6 +96,11 @@ class CourseController {
     }
   }
 
+  /**
+   * @desc    Get courses
+   * @route   POST /api/course
+   * @access  Public
+   */
   async getCourses(req, res, next) {
     try {
       // Building query based on filters
@@ -127,7 +144,38 @@ class CourseController {
       next(error);
     }
   }
+  /**
+   * @desc    Get instructor courses
+   * @route   GET /api/course/instructor/my-courses
+   * @access  instructor
+   */
+  async getInstructorCourses(req, res, next) {
+    try {
+      const instructorId = req.user.userId;
+      if (!instructorId) {
+        return res.status(401).json({ error: "Authorization required" });
+      }
 
+      const instructor = await Course.find();
+      if (!instructor) {
+        return res.status(404).json({
+          error: "No course found",
+        });
+      }
+
+      return res.status(200).json({
+        data: instructor,
+      });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @desc    Approve course
+   * @route   PATCH /api/course/:id/approve
+   * @access  Admin
+   */
   async approveCourse(req, res) {
     try {
       // Admin-only middleware should verify role first
@@ -150,6 +198,7 @@ class CourseController {
       // await sendApprovalEmail(course.createdBy);
 
       res.json({
+        message: "Course approved ✅",
         data: course,
       });
     } catch (error) {
@@ -157,6 +206,11 @@ class CourseController {
     }
   }
 
+  /**
+   * @desc    Delete a course
+   * @route   POST /api/course/:id
+   * @access Admin
+   */
   async deleteCourse(req, res, next) {
     try {
       const adminId = req.user.userId;
