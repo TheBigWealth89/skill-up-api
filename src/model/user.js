@@ -1,4 +1,5 @@
 import mongoose from "mongoose";
+import crypto from "crypto";
 export const ROLES = {
   user: "user",
   instructor: "instructor",
@@ -44,18 +45,40 @@ const userSchema = new mongoose.Schema(
     },
     failedLoginAttempts: { type: Number, default: 0, select: false },
     lockUntil: { type: Date, default: null, select: false },
+    passwordResetToken: { type: String, select: false },
+    passwordResetExpires: { type: Date, select: false },
     profilePicture: { type: String, default: "" },
     isLocked: { type: Boolean, default: false },
   },
   { timestamps: true }
 );
 
+// Method to generate a password reset token
+userSchema.methods.createPasswordResetToken = function () {
+  //  Generate the raw token (this is what you send in the email)
+  const resetToken = crypto.randomBytes(32).toString("hex");
+
+  //  Hash the token (this is what  store in the DB)
+  this.passwordResetToken = crypto
+    .createHash("sha256")
+    .update(resetToken)
+    .digest("hex");
+
+  
+  this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
+
+  console.log({ resetToken, hashed: this.passwordResetToken }); // For debugging
+
+  //  Return the raw token (to be sent via email)
+  return resetToken;
+};
+
 userSchema.pre("save", function (next) {
   // Example: Maybe you have logic that tries to *derive* isLocked?
   if (this.lockUntil && this.lockUntil > new Date()) {
     this.isLocked = true;
   } else {
-    this.isLocked = false; // <-- !! This could be overwriting your 'true' !!
+    this.isLocked = false; // <-- !! This could be overwriting the 'true' !!
   }
   next();
 });
