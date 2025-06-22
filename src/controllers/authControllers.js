@@ -1,6 +1,6 @@
 import { hash, compare } from "bcrypt";
+import crypto from "crypto";
 import User from "../model/user.js";
-// import logger from "../utils/logger.js";
 import { security } from "../config/auth.config.js";
 import {
   generateTokens,
@@ -12,6 +12,7 @@ import {
 import config from "../config/config.js";
 import RefreshToken from "../model/refreshToken.js";
 import { LoginError } from "../error/customErrors.js";
+import emailService from "../services/emailService.js";
 /**
  *
  *
@@ -20,14 +21,23 @@ import { LoginError } from "../error/customErrors.js";
 class AuthController {
   // Register user
   async signup(req, res, next) {
-    const { name, username, email, password, profilePicture, roles } = req.body;
+    const {
+      firstName,
+      lastName,
+      username,
+      email,
+      password,
+      profilePicture,
+      roles,
+    } = req.body;
     try {
       const saltRound = 10;
       const hashedPassword = await hash(password, saltRound);
 
       const user = new User({
         email,
-        name,
+        firstName,
+        lastName,
         username,
         password: hashedPassword,
         profilePicture,
@@ -35,11 +45,18 @@ class AuthController {
       });
 
       await user.save();
-
+      try {
+        await emailService.sendWelcomeEmail({
+          email: user.email,
+          name: user.firstName,
+        });
+      } catch (emailError) {
+        //  Don't fail the signup if email fails
+      }
       const userResponse = {
         _id: user._id,
         email: user.email,
-        name: user.name,
+        name: user.firstName,
         username: user.username,
         profilePicture: user.profilePicture,
       };
@@ -72,9 +89,6 @@ class AuthController {
       const user = await User.findOne({
         $or: [{ email: cleanIdentifier }, { username: cleanIdentifier }],
       }).select("+password +failedLoginAttempts +lockUntil");
-
-      console.log("User exists", user);
-      // logger.info(user);
 
       // Timing attack-safe comparison
       const dummyHash = await hash("dummyHash", 10);
@@ -128,7 +142,7 @@ class AuthController {
       res.cookie("refreshToken", tokens.refreshToken, config.jwt.cookieOptions);
 
       const loginResponse = {
-        name: user.name,
+        name: user.firstName,
         _id: user._id,
         email: user.email,
         username: user.username,
@@ -195,20 +209,12 @@ class AuthController {
     const cookieToken = req.cookies.refreshToken;
     const oldToken = headerToken || cookieToken;
 
-    console.log("Using refresh token:", oldToken);
-
-    console.log("Incoming refresh token:", oldToken?.substring(0, 20) + "...");
-
     if (!oldToken) {
       return res.status(401).json({ error: "Refresh token required" });
     }
-    console.log("Header refreshToken:", req.headers["authorization"]);
-    console.log("Cookie refreshToken:", req.cookies.refreshToken);
 
     const tokens = await RefreshToken.find({});
-    tokens.forEach((doc) => {
-      console.log("Stored token😋:", doc.token);
-    });
+    tokens.forEach((doc) => {});
 
     try {
       //Verify THE PROVIDED TOKEN ONLY
@@ -235,6 +241,115 @@ class AuthController {
       });
     } catch (error) {
       return res.status(500).json({ error: "Internal server error" });
+    }
+  }
+
+  async forgotPassword(req, res, next) {
+    try {
+      //Find user email
+      const user = await User.findOne({ email: req.body.email });
+      if (user) {
+        const resetToken = user.createPasswordResetToken();
+        await user.save({ validateBeforeSave: false });
+        try {
+          // Construct the reset URL (adjust for your frontend)
+          const resetURL = `${req.protocol}://${req.get(
+            "host"
+          )}/api/auth/reset-password/${resetToken}`;
+          await emailService.sendPasswordResetEmail({
+            email: user.email,
+            name: user.firstName,
+            url: resetURL,
+          });
+
+          res.status(200).json({
+            status: "success",
+            message: "Token sent to email!",
+          });
+        } catch (emailError) {
+          // If email fails, reset the fields so user can try again later
+          user.passwordResetToken = undefined;
+          user.passwordResetExpires = undefined;
+          await user.save({ validateBeforeSave: false });
+
+          return next(
+            new Error("There was an error sending the email. Try again later.")
+          );
+        }
+      } else {
+        //Even if user doesn't exist, send a success response
+        // Prevents attackers from guessing which emails are registered.
+        res.status(200).json({
+          status: "success",
+          message:
+            "If an account with that email exists, a token has been sent.",
+        });
+      }
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  async resetPassword(req, res, next) {
+    try {
+      // Get the token from the URL and hash it
+      const unhashedToken = req.params.token;
+      const hashedToken = crypto
+        .createHash("sha256")
+        .update(unhashedToken)
+        .digest("hex");
+
+      // 2. Find the user with this hashed token and ensure it's not expired
+      const user = await User.findOne({
+        passwordResetToken: hashedToken,
+        passwordResetExpires: { $gt: Date.now() }, // $gt means 'greater than'
+      }).select("+password +failedLoginAttempts +lockUntil +refreshToken"); // Select fields we need to modify
+
+      //  If token is invalid or expired, send error
+      if (!user) {
+        throw new LoginError("Token is invalid or has expired.", 400);
+      }
+
+      // 4. Set the new password & clear reset fields
+      const { password, passwordConfirm } = req.body;
+      if (!password || !passwordConfirm || password !== passwordConfirm) {
+        throw new LoginError("Passwords do not match or are missing.", 400);
+      }
+
+      const saltRound = 10;
+      const hashedPassword = await hash(password, saltRound);
+      user.password = hashedPassword;
+      user.passwordResetToken = undefined;
+      user.passwordResetExpires = undefined;
+      user.failedLoginAttempts = 0; // Reset lock status
+      user.lockUntil = null;
+
+      // Invalidate old refresh tokens (IMPORTANT SECURITY STEP)
+      const { refreshToken } = req.cookies;
+      if (refreshToken) {
+        await removeRefreshToken(refreshToken);
+        res.clearCookie("refreshToken");
+      }
+
+      await user.save(); // This will trigger pre-save hook for hashing password
+      try {
+        await emailService.sendSuccessPasswordResetEmail({
+          email: user.email,
+          name: user.firstName,
+        });
+      } catch (emailError) {
+        return next(
+          new Error("There was an error sending the email. Try again later.")
+        );
+      }
+
+      res.status(200).json({
+        status: "success",
+        message: "Password reset successfully.",
+        user: user,
+      });
+    } catch (error) {
+      next(error);
     }
   }
 }

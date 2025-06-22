@@ -7,9 +7,7 @@ class submissionControllers {
    */
   async submitAssignment(req, res, next) {
     try {
-           console.log('Raw request body:', req.body);
-    console.log('Uploaded files:', req.files);
-
+          
     if (!req.body.assignmentId) {
       return res.status(400).json({ error: "assignmentId is required" });
     }

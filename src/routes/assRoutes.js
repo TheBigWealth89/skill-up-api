@@ -22,4 +22,4 @@ assignmentRoutes.put(
 
 assignmentRoutes.get("/", assignmentController.getAssignment);
 
-export default assignmentRoutes
+export default assignmentRoutes;

@@ -45,7 +45,7 @@ const courseSchema = new mongoose.Schema(
       type: String,
       validate: {
         validator: v => /^(https?\:\/\/)?(www\.)?(youtube\.com|vimeo\.com)\/.+$/.test(v),
-        message: "Video URL must be from YouTube or Vimeo"
+        message: "Video URL must be from YouTube"
       }
     },
     isApproved: { 
@@ -57,7 +57,7 @@ const courseSchema = new mongoose.Schema(
       enum: ["beginner", "intermediate", "advanced"],
       default: "beginner"
     },
-    estimatedDuration: { // in hours
+    estimatedDuration: { // in hours  
       type: Number,
       min: 0
     },

@@ -6,7 +6,7 @@ import authRoutes from "./routes/authRoutes.js";
 import adminRoutes from "./routes/adminRoutes.js";
 import courseRoutes from "./routes/courseRoutes.js";
 import enrollRoutes from "./routes/enrollRoutes.js";
-import assignmentRoutes from "./routes/assRotes.js";
+import assignmentRoutes from "./routes/assRoutes.js";
 import submissionRoutes from "./routes/submissionRoutes.js";
 import connectDB from "./lib/db.js";
 import redisServices from "./services/redisServices.js";

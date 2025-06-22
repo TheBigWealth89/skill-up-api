@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
-import jwt from "jsonwebtoken"
+import jwt from "jsonwebtoken";
 import config from "../config/config.js";
 import RedisService from "../services/redisServices.js";
 import RefreshToken from "../model/refreshToken.js";
@@ -37,7 +37,6 @@ export const generateTokens = (payload) => {
     refreshTokenOptions
   );
 
-  console.log(payload)
   return { accessToken, refreshToken };
 };
 
@@ -58,9 +57,9 @@ export const verifyAccessToken = async (token) => {
     return jwt.verify(token, config.jwt.ACCESS_SECRET);
   } catch (error) {
     if (error instanceof Error) {
-      console.error("Error verifying access token:", error.message);
+      throw new Error("Token has been blacklisted", error.message);
     } else {
-      console.error("Error verifying access token:", error);
+      throw new Error("Error verifying access token: ", error);
     }
     return null; // Return null if verification fails
   }
@@ -83,7 +82,6 @@ export const saveRefreshToken = async (userId, refreshToken) => {
 };
 export const verifyRefreshToken = async (token) => {
   if (!token) {
-    console.log("No token provided");
     return null;
   }
 
@@ -91,9 +89,7 @@ export const verifyRefreshToken = async (token) => {
   let payload;
   try {
     payload = jwt.verify(token, config.jwt.REFRESH_SECRET);
-    console.log("Token signature valid for user:", payload.userId);
   } catch (err) {
-    console.error("Invalid token signature:", err);
     return null;
   }
 
@@ -112,7 +108,6 @@ export const verifyRefreshToken = async (token) => {
     );
 
     if (!tokenDoc) {
-      console.log("EXACT token not found in database");
       await session.abortTransaction();
       return null;
     }
@@ -121,7 +116,6 @@ export const verifyRefreshToken = async (token) => {
     return payload;
   } catch (err) {
     await session.abortTransaction();
-    console.error("Database operation failed:", err);
     return null;
   } finally {
     session.endSession();
@@ -131,22 +125,17 @@ export const verifyRefreshToken = async (token) => {
 export const addToBlacklist = async (token) => {
   try {
     const decoded = jwt.decode(token);
-    console.log(decoded);
     if (decoded && typeof decoded === "object" && "exp" in decoded) {
       const currentTime = Math.floor(Date.now() / 1000);
-      console.log(
-        "Server Time (at blacklist):",
-        new Date(currentTime * 1000).toISOString()
-      );
+     
       const ttl = decoded.exp !== undefined ? decoded.exp - currentTime : 0;
-      console.log(
-        "Token Expiry (exp):",
-        new Date((decoded.exp || 0) * 1000).toISOString()
-      );
-      console.log("Calculated TTL:", ttl);
+      // console.log(
+      //   "Token Expiry (exp):",
+      //   new Date((decoded.exp || 0) * 1000).toISOString()
+      // );
+      // console.log("Calculated TTL:", ttl);
       if (ttl > 0) {
         await RedisService.blacklistToken(token, ttl);
-        console.log("Token successfully blacklisted");
       } else {
         console.log(
           "Token already expired or no expiry found, not blacklisting."
@@ -154,7 +143,6 @@ export const addToBlacklist = async (token) => {
       }
     }
   } catch (err) {
-    console.error("Blacklist error:", err);
     throw err;
   }
 };

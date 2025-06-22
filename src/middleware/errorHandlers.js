@@ -3,7 +3,7 @@ import mongoose from "mongoose";
 import { MongoServerError } from "mongodb";
 
 export const globalErrorHandler = (err, req, res, next) => {
-  console.error("Global Error Handler:", err.stack || err);
+  // console.error("Global Error Handler:", err.stack || err);
 
   // Mongoose validation error
   if (err instanceof mongoose.Error.ValidationError) {

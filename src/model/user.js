@@ -7,7 +7,8 @@ export const ROLES = {
 };
 const userSchema = new mongoose.Schema(
   {
-    name: { type: String, required: [true, "Name is required"] },
+    firstName: { type: String, required: [true, "Name is required"] },
+    lastName: { type: String, required: [true, "Name is required"] },
     username: {
       type: String,
       trim: true,
@@ -63,11 +64,11 @@ userSchema.methods.createPasswordResetToken = function () {
     .createHash("sha256")
     .update(resetToken)
     .digest("hex");
+  ``;
 
-  
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
-  console.log({ resetToken, hashed: this.passwordResetToken }); // For debugging
+ // console.log({ resetToken, hashed: this.passwordResetToken }); // For debugging
 
   //  Return the raw token (to be sent via email)
   return resetToken;
@@ -82,5 +83,5 @@ userSchema.pre("save", function (next) {
   }
   next();
 });
-const User = mongoose.model("User", userSchema);
+const User = mongoose.models.User || mongoose.model("User", userSchema);
 export default User;
