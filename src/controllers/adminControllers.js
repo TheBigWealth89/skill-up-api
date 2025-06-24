@@ -1,6 +1,11 @@
+import User from "../model/user.js";
 class adminController {
   async getAllUsers(req, res, next) {
     try {
+      const adminId = req.user.userId;
+      if (!adminId) {
+        res.status(401).json({ error: "Authorization required" });
+      }
       const users = await User.find();
       res.status(200).json({
         users: users,
