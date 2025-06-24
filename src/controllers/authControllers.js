@@ -1,6 +1,7 @@
 import { hash, compare } from "bcrypt";
 import crypto from "crypto";
 import User from "../model/user.js";
+import { security } from "../config/auth.config.js";
 import {
   generateTokens,
   addToBlacklist,
@@ -75,8 +76,6 @@ class AuthController {
       req.body.identifier || req.body.username || req.body.email;
     const password = req.body.password;
 
-    const MAX_FAILED_ATTEMPTS = 5;
-    const LOCK_DURATION_TIME = 15;
     try {
       if (!identifier || !password) {
         //Import custom error from errors folder
@@ -112,15 +111,15 @@ class AuthController {
       const isMatch = await compare(password, user.password);
       if (!isMatch) {
         user.failedLoginAttempts += 1;
-        if (user.failedLoginAttempts >= MAX_FAILED_ATTEMPTS) {
+        if (user.failedLoginAttempts >= security.MAX_FAILED_ATTEMPTS) {
           user.lockUntil = new Date(
-            Date.now() + LOCK_DURATION_TIME * 60 * 1000
+            Date.now() + security.LOCK_DURATION_TIME * 60 * 1000
           );
           user.isLocked = true;
           user.failedLoginAttempts = 0;
           await user.save();
           throw new LoginError(
-            `Invalid credentials. Account locked for ${LOCK_DURATION_TIME} minutes`
+            `Invalid credentials. Account locked for ${security.LOCK_DURATION_TIME} minutes`
           );
         }
         await user.save(); //Save changes
