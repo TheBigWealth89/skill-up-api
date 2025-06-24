@@ -11,7 +11,7 @@ class RedisService {
     });
 
     this.client.on("connect", () => {
-      console.log("✅ Connected to Redis:", redisUrl);
+      console.log("✅ Connected to Redis successfully", );
     });
 
     this.client.on("reconnecting", () => {
