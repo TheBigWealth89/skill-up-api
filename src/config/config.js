@@ -25,8 +25,8 @@ export default {
     // Token expiration times
     jwt_access_expiry: process.env.JWT_ACCESS_EXPIRY,
 
-    jwt_refresh_expiry: process.env.JWT_REFRESH_EXPIRY ,
-    jwt_reset_expiry: process.env.JWT_RESET_EXPIRY ,
+    jwt_refresh_expiry: process.env.JWT_REFRESH_EXPIRY,
+    jwt_reset_expiry: process.env.JWT_RESET_EXPIRY,
 
     cookieOptions: {
       httpOnly: true,
