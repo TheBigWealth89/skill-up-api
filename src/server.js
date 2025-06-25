@@ -32,6 +32,10 @@ connectDB();
   await redisServices.connect();
 })();
 
+app.get("/", (req, res) => {
+  res.send("✅ Server is health");
+});
+
 app.use("/api/auth", authRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/course", courseRoutes);
@@ -44,6 +48,6 @@ app.use("/uploads", express.static("uploads"));
 
 app.use(globalErrorHandler);
 
-app.listen(PORT, () =>
-  console.log(`Server is running on http://localhost:${PORT}`)
-);
+app.listen(PORT, "0.0.0.0", () => {
+  console.log(`✅ Server is running on http://localhost:${PORT}`);
+});
