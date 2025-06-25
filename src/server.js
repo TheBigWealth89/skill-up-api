@@ -33,7 +33,7 @@ connectDB();
 })();
 
 app.get("/", (req, res) => {
-  res.send("✅ Server is health");
+  res.send("✅ Server is healthy");
 });
 
 app.use("/api/auth", authRoutes);
