@@ -45,6 +45,8 @@ POST   /api/auth/signup          → Register user
 POST   /api/auth/login           → Login with email/username & password
 POST   /api/auth/logout          → Logout, blacklist token, clear cookie
 POST   /api/auth/refresh         → Refresh access token (secure rotation)
+POST   /api/auth/forgot-password → Send a rest password token
+POST   /api/auth/forgot-password/token → Reset password
 ```
 
 ### 🎓 Courses
