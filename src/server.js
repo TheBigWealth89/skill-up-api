@@ -20,7 +20,7 @@ app.use(express.json({ limit: "10mb" })); // Increased body size limit
 app.use(cookieParser());
 app.use(
   cors({
-    origin: "",
+    origin: "http://localhost:8080/",
     methods: ["GET", "POST", "PUT", "DELETE"], // Allowed HTTP methods
     credentials: true, // Allow cookies to be sent with requests
   })
