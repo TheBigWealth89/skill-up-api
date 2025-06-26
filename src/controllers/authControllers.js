@@ -147,6 +147,7 @@ class AuthController {
         email: user.email,
         username: user.username,
         profilePicture: user.profilePicture,
+        role: user.roles
       };
 
       res.status(200).json({

@@ -1,7 +1,7 @@
 import mongoose from "mongoose";
 import crypto from "crypto";
 export const ROLES = {
-  user: "user",
+  learner: "learner",
   instructor: "instructor",
   admin: "admin",
 };
@@ -41,7 +41,7 @@ const userSchema = new mongoose.Schema(
     roles: {
       type: [String],
       enum: Object.values(ROLES),
-      default: [ROLES.user],
+      default: [ROLES.learner],
       required: true,
     },
     failedLoginAttempts: { type: Number, default: 0, select: false },
@@ -68,7 +68,7 @@ userSchema.methods.createPasswordResetToken = function () {
 
   this.passwordResetExpires = Date.now() + 10 * 60 * 1000; // 10 minutes
 
- // console.log({ resetToken, hashed: this.passwordResetToken }); // For debugging
+  // console.log({ resetToken, hashed: this.passwordResetToken }); // For debugging
 
   //  Return the raw token (to be sent via email)
   return resetToken;
