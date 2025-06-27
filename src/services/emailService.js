@@ -8,7 +8,7 @@ class EmailService {
       host: config.email.host,
       port: config.email.port,
       secure: config.email.port === 465,
-      auth: { 
+      auth: {
         user: config.email.auth.user,
         pass: config.email.auth.pass,
       },
@@ -28,7 +28,7 @@ class EmailService {
 
     try {
       const info = await this.transporter.sendMail(mailOptions);
-    //   console.log("Message sent: %s", info.messageId);
+      //   console.log("Message sent: %s", info.messageId);
       // console.log('Preview URL: %s', nodemailer.getTestMessageUrl(info));
     } catch (error) {
       throw new Error("Failed to send email.");

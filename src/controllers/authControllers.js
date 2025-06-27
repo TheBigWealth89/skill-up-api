@@ -21,16 +21,16 @@ import emailService from "../services/emailService.js";
 class AuthController {
   // Register user
   async signup(req, res, next) {
-    const {
-      firstName,
-      lastName,
-      username,
-      email,
-      password,
-      avatar,
-      roles,
-    } = req.body;
+    const { firstName, lastName, username, email, password, avatar, roles } =
+      req.body;
     try {
+   
+      if (!password || typeof password !== "string" || password.length < 8) {
+        return res.status(400).json({
+          errors: { password: "Password must be at least 8 characters" },
+        });
+      }
+
       const saltRound = 10;
       const hashedPassword = await hash(password, saltRound);
 
