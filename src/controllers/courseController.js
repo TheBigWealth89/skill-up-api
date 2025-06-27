@@ -21,7 +21,7 @@ class CourseController {
       // Return course with creator details
       const populatedCourse = await Course.findById(course._id).populate(
         "createdBy",
-        "name profilePicture"
+        "name avatar"
       );
 
       res.status(201).json({
@@ -41,7 +41,7 @@ class CourseController {
   async getCourse(req, res, next) {
     try {
       const course = await Course.findById(req.params.id)
-        .populate("createdBy", "name profilePicture ")
+        .populate("createdBy", "name avatar ")
         .populate({
           path: "enrollmentCount", // Virtual field
           select: "status",
@@ -77,7 +77,6 @@ class CourseController {
       }
 
       // Check ownership (or admin role)
-     
 
       // Prevent certain fields from being updated
       const { createdBy, isApproved, ...updates } = req.body;

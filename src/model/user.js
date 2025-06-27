@@ -48,7 +48,7 @@ const userSchema = new mongoose.Schema(
     lockUntil: { type: Date, default: null, select: false },
     passwordResetToken: { type: String, select: false },
     passwordResetExpires: { type: Date, select: false },
-    profilePicture: { type: String, default: "" },
+    avatar: { type: String, default: "" },
     isLocked: { type: Boolean, default: false },
   },
   { timestamps: true }

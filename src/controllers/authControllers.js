@@ -27,7 +27,7 @@ class AuthController {
       username,
       email,
       password,
-      profilePicture,
+      avatar,
       roles,
     } = req.body;
     try {
@@ -40,7 +40,7 @@ class AuthController {
         lastName,
         username,
         password: hashedPassword,
-        profilePicture,
+        avatar,
         roles,
       });
 
@@ -58,7 +58,7 @@ class AuthController {
         email: user.email,
         name: user.firstName,
         username: user.username,
-        profilePicture: user.profilePicture,
+        avatar: user.avatar,
       };
 
       res.status(201).json({
@@ -78,7 +78,7 @@ class AuthController {
 
     try {
       if (!identifier || !password) {
-        //Import custom error from errors folder
+        //Import custom error f rom errors folder
         throw new LoginError(
           "Username or Email and Password are required",
           400
@@ -146,14 +146,12 @@ class AuthController {
         _id: user._id,
         email: user.email,
         username: user.username,
-        profilePicture: user.profilePicture,
-        role: user.roles
+        avatar: user.avatar,
       };
 
       res.status(200).json({
         user: loginResponse,
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
       });
     } catch (error) {
       next(error);
