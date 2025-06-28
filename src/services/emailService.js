@@ -335,6 +335,68 @@ class EmailService {
       html,
     });
   }
+
+  /**
+   * Sends an email to an admin when a new course is created.
+   * @param {object} course - The course object that was created.
+   * @param {object} instructor - The instructor user object.
+   */
+  async sendNewCourseForApprovalEmail(course, instructor) {
+    const adminEmail = config.email.auth.admin;
+
+    const mailOptions = {
+      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+      to: adminEmail,
+      subject: `New Course for Approval: ${course.title}`,
+      html: `
+      <h1>New Course Submission</h1>
+      <p>Hello Admin,</p>
+      <p>A new course titled "<strong>${course.title}</strong>" has been submitted by instructor <strong>${instructor.name}</strong> and is awaiting your approval.</p>
+      <p>Please log in to the admin dashboard to review it.</p>
+      <br>
+      <p>Thank you,</p>
+      <p>Your App Team</p>
+    `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log("Approval notification sent to admin.");
+  }
+
+  /**
+   * Sends an email to an instructor when their course is approved.
+   * @param {object} course - The course object that was approved.
+   */
+  async sendCourseApprovalEmail(course) {
+    // We need to populate the instructor's email
+    const populatedCourse = await course.populate("createdBy", "name email");
+    const instructor = populatedCourse.createdBy;
+
+    if (!instructor || !instructor.email) {
+      console.error(
+        "Could not send approval email: Instructor email not found."
+      );
+      return;
+    }
+
+    const mailOptions = {
+      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
+      to: instructor.email,
+      subject: `Congratulations! Your Course "${course.title}" has been Approved`,
+      html: `
+      <h1>Course Approved!</h1>
+      <p>Hello ${instructor.name},</p>
+      <p>Great news! Your course, "<strong>${course.title}</strong>", has been reviewed and approved by an administrator.</p>
+      <p>It is now live on the platform for learners to enroll in.</p>
+      <br>
+      <p>Congratulations!</p>
+      <p>Your App Team</p>
+    `,
+    };
+
+    await transporter.sendMail(mailOptions);
+    console.log(`Approval email sent to instructor: ${instructor.email}`);
+  }
 }
 
 export default new EmailService();

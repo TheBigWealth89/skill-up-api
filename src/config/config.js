@@ -47,6 +47,7 @@ export default {
     auth: {
       user: process.env.EMAIL_USER,
       pass: process.env.EMAIL_PASS,
+      admin: process.env.ADMIN_EMAIL,
     },
     from: process.env.EMAIL_FROM || '"Skill up" <no-reply@youngdev.com>',
   },

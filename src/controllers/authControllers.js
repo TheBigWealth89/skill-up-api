@@ -24,7 +24,6 @@ class AuthController {
     const { firstName, lastName, username, email, password, avatar, roles } =
       req.body;
     try {
-   
       if (!password || typeof password !== "string" || password.length < 8) {
         return res.status(400).json({
           errors: { password: "Password must be at least 8 characters" },
@@ -140,9 +139,9 @@ class AuthController {
 
       // Set HTTP-only cookie
       res.cookie("refreshToken", tokens.refreshToken, config.jwt.cookieOptions);
-
+      const name = { firstName: user.firstName, lastName: user.lastName };
       const loginResponse = {
-        name: user.firstName,
+        name: name,
         _id: user._id,
         email: user.email,
         username: user.username,

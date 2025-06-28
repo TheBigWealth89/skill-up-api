@@ -155,15 +155,16 @@ class CourseController {
         return res.status(401).json({ error: "Authorization required" });
       }
 
-      const instructor = await Course.find();
-      if (!instructor) {
+      const courses = await Course.find({ createdBy: instructorId });
+      if (!courses) {
         return res.status(404).json({
           error: "No course found",
         });
       }
 
       return res.status(200).json({
-        data: instructor,
+        count: courses.length,
+        data: courses,
       });
     } catch (error) {
       next(error);
@@ -182,7 +183,7 @@ class CourseController {
         req.params.id,
         {
           isApproved: true,
-          approvedBy: req.user._id, // Track who approved it
+          approvedBy: req.user.userId, // Track who approved it
         },
         { new: true }
       );

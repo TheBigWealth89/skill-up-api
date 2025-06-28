@@ -8,6 +8,7 @@ class adminController {
       }
       const users = await User.find();
       res.status(200).json({
+        count: users.length,
         users: users,
       });
     } catch (error) {
