@@ -9,6 +9,7 @@ class EmailService {
       port: config.email.port,
       secure: config.email.port === 465,
       auth: {
+        admin: config.email.auth.admin,
         user: config.email.auth.user,
         pass: config.email.auth.pass,
       },
@@ -19,7 +20,7 @@ class EmailService {
 
   async sendMail(options) {
     const mailOptions = {
-      from: `"Skill up" <${config.email.from}>`, // Sender address
+      from: `"Skillup Nigeria" <${config.email.from}>`, // Sender address
       to: options.to,
       subject: options.subject,
       text: options.text,
@@ -40,88 +41,25 @@ class EmailService {
     const html = `
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            -webkit-font-smoothing: antialiased;
-        }        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: #ffffff;
-        }
-        .header {
-            padding: 20px 0;
-            border-bottom: 1px solid #e1e1e1;
-            margin-bottom: 32px;
-        }
-        .content {
-            padding: 0 15px;
-            margin-bottom: 40px;
-        }
-        .btn {
-            display: inline-block;
-            padding: 14px 32px;
-            background-color: #3498db;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            text-align: center;
-            transition: background-color 0.2s;
-            margin: 25px 0;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-        .footer {
-            padding-top: 32px;
-            border-top: 1px solid #e1e1e1;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-        .warning {
-            color: #666;
-            font-size: 14px;
-            font-style: italic;
-            margin-top: 20px;
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-               
-        <div class="header">
-            <h1 style="color: #2c3e50; margin: 0;">Password Reset Request</h1>
-        </div>
-        
-        <div class="content">
-            <p>Hello ${data.name},</p>
-            <p style="margin: 20px 0;">You've requested to reset your password. Click the button below to create a new password:</p>
-            
-            <div style="text-align: center;">
-                <a href="${data.url}" class="btn">Reset Password</a>
-            </div>
-            
-            <p class="warning">This link will expire in 10 minutes for security reasons.</p>
-            <p class="warning">If you didn't request this password reset, please ignore this email or contact support if you're concerned.</p>
-        </div>
-        
-        <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} Skill Up Nigeria. All rights reserved.</p>
-            <p style="margin-top: 10px;">
-                <a href="https://skillupnigeria.com/privacy" style="color: #3498db; text-decoration: none;">Privacy Policy</a> | 
-                <a href="https://skillupnigeria.com/terms" style="color: #3498db; text-decoration: none;">Terms of Service</a>
-            </p>
-        </div>
+<body style="font-family: Arial, sans-serif; color: #333;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+    <h2>Password Reset Request</h2>
+    <p>Hello ${data.name},</p>
+    <p>You've requested to reset your password. Click the button below to create a new password:</p>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="${
+        data.url
+      }" style="display:inline-block;padding:12px 28px;background:#3498db;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Reset Password</a>
     </div>
+    <p style="font-size:13px;color:#666;">This link will expire in 10 minutes for security reasons.</p>
+    <p style="font-size:13px;color:#666;">If you didn't request this password reset, please ignore this email or contact support if you're concerned.</p>
+    <hr style="margin:32px 0;">
+    <footer style="font-size:12px;color:#888;text-align:center;">
+      &copy; ${new Date().getFullYear()} Skill Up Nigeria. All rights reserved.<br>
+      <a href="https://skillupnigeria.com/privacy" style="color:#3498db;">Privacy Policy</a> |
+      <a href="https://skillupnigeria.com/terms" style="color:#3498db;">Terms of Service</a>
+    </footer>
+  </div>
 </body>
 </html>`;
 
@@ -135,45 +73,28 @@ class EmailService {
   async sendSuccessPasswordResetEmail(data) {
     const subject = "Password reset successfully";
     const html = `
-    <!DOCTYPE html>
+<!DOCTYPE html>
 <html>
-<head>
-    <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px; }
-        .header { color: #2c3e50; text-align: center; border-bottom: 3px solid #3498db; padding-bottom: 10px; }
-        .logo { max-width: 150px; margin-bottom: 20px; }
-        .footer { margin-top: 30px; font-size: 0.9em; color: #7f8c8d; text-align: center; }
-    </style>
-</head>
-<body>
-       <div class="header">
-        <h2>Password Reset Confirmation</h2>
-    </div>
-    
+<body style="font-family: Arial, sans-serif; color: #333;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+    <h2 style="color:#2c3e50;text-align:center;">Password Reset Confirmation</h2>
     <p>Hello ${data.name},</p>
-    
     <p>Your Skill Up Nigeria account password has been successfully reset on ${new Date().toLocaleString()}.</p>
-    
     <p>If you initiated this change, no further action is required. If you didn't request this password reset, please contact our support team immediately at <a href="mailto:support@skillupnigeria.com">support@skillupnigeria.com</a>.</p>
-    
     <p>For your security, we recommend:</p>
     <ul>
-        <li>Using a strong, unique password</li>
-        <li>Updating your password regularly</li>
+      <li>Using a strong, unique password</li>
+      <li>Updating your password regularly</li>
     </ul>
-    
-    <p>You can now login with your new password: <a href=">https://localhost/5000/auth/login">https://localhost/5000/auth/login</a></p>
-    
-    <p>Stay secure,<br>
-    <strong>The Skill Up Nigeria Team</strong></p>
-    
-    <div class="footer">
-        <p>© ${new Date().getFullYear()} Skill Up Nigeria. All rights reserved.</p>
-        <p>
-            <a href="https://skillupnigeria.com/privacy">Privacy Policy</a> | 
-            <a href="https://skillupnigeria.com/terms">Terms of Service</a>
-        </p>
-    </div>
+    <p>You can now login with your new password: <a href="https://localhost/5000/auth/login">https://localhost/5000/auth/login</a></p>
+    <p>Stay secure,<br><strong>The Skill Up Nigeria Team</strong></p>
+    <hr style="margin:32px 0;">
+    <footer style="font-size:12px;color:#888;text-align:center;">
+      &copy; ${new Date().getFullYear()} Skill Up Nigeria. All rights reserved.<br>
+      <a href="https://skillupnigeria.com/privacy" style="color:#3498db;">Privacy Policy</a> |
+      <a href="https://skillupnigeria.com/terms" style="color:#3498db;">Terms of Service</a>
+    </footer>
+  </div>
 </body>
 </html>
     `;
@@ -190,142 +111,28 @@ class EmailService {
     const html = `
 <!DOCTYPE html>
 <html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { 
-            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            line-height: 1.6;
-            color: #333;
-            -webkit-font-smoothing: antialiased;
-        }        .container {
-            max-width: 600px;
-            margin: 0 auto;
-            padding: 40px 20px;
-            background: #ffffff;
-        }
-        .header {
-            text-align: center;
-            padding: 20px 0;
-            border-bottom: 1px solid #e1e1e1;
-            margin-bottom: 32px;
-        }
-        .content {
-            padding: 0 15px;
-            margin-bottom: 40px;
-        }
-        .features {
-            background: #f8f9fa;
-            border-radius: 8px;
-            padding: 25px;
-            margin: 25px 0;
-        }
-        .feature-item {
-            display: flex;
-            align-items: center;
-            margin: 15px 0;
-            padding: 10px;
-            background: #ffffff;
-            border-radius: 6px;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
-        }
-        .feature-icon {
-            width: 40px;
-            height: 40px;
-            margin-right: 15px;
-            background: #e8f4fd;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: #3498db;
-        }
-        .btn {
-            display: inline-block;
-            padding: 14px 32px;
-            background-color: #3498db;
-            color: #ffffff !important;
-            text-decoration: none;
-            border-radius: 6px;
-            font-weight: 600;
-            text-align: center;
-            transition: background-color 0.2s;
-            margin: 25px 0;
-        }
-        .btn:hover {
-            background-color: #2980b9;
-        }
-        .footer {
-            padding-top: 32px;
-            border-top: 1px solid #e1e1e1;
-            text-align: center;
-            color: #666;
-            font-size: 14px;
-        }
-        @media only screen and (max-width: 480px) {
-            .container { padding: 20px 10px; }
-            .content { padding: 0 10px; }
-            .features { padding: 15px; }
-        }
-    </style>
-</head>
-<body>
-    <div class="container">
-       
-        
-        <div class="header">
-            <h1 style="color: #2c3e50; margin: 0;">Welcome to Skill Up Nigeria!</h1>
-            <p style="color: #666; margin-top: 10px;">Your journey to excellence starts here</p>
-        </div>
-        
-        <div class="content">
-            <p>Hello ${data.name},</p>
-            <p style="margin: 20px 0;">We're thrilled to have you join our community of lifelong learners. At Skill Up Nigeria, we're committed to helping you gain the skills needed to excel in today's competitive world.</p>
-            
-            <div class="features">
-                <h2 style="color: #2c3e50; margin-bottom: 20px;">Get Started with These Steps:</h2>
-                <div class="feature-item">
-                    <div class="feature-icon">📚</div>
-                    <div>
-                        <h3 style="color: #2c3e50; margin: 0;">Explore Courses</h3>
-                        <p style="margin: 5px 0 0 0;">Browse our <a href="https://skillupnigeria.com/courses" style="color: #3498db; text-decoration: none;">course catalog</a> to find your perfect learning path</p>
-                    </div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">👤</div>
-                    <div>
-                        <h3 style="color: #2c3e50; margin: 0;">Complete Your Profile</h3>
-                        <p style="margin: 5px 0 0 0;">Add your details to get personalized course recommendations</p>
-                    </div>
-                </div>
-                <div class="feature-item">
-                    <div class="feature-icon">🤝</div>
-                    <div>
-                        <h3 style="color: #2c3e50; margin: 0;">Join the Community</h3>
-                        <p style="margin: 5px 0 0 0;">Connect with peers in our <a href="https://community.skillupnigeria.com" style="color: #3498db; text-decoration: none;">learning community</a></p>
-                    </div>
-                </div>
-            </div>
-
-            <div style="text-align: center;">
-                <a href="https://skillupnigeria.com/get-started" class="btn">Start Learning Now</a>
-            </div>
-
-            <p style="margin: 20px 0;">If you have any questions, our support team is always ready to help at <a href="mailto:support@skillupnigeria.com" style="color: #3498db; text-decoration: none;">support@skillupnigeria.com</a></p>
-            
-            <p style="margin-top: 30px;">Happy learning!<br><strong>The Skill Up Nigeria Team</strong></p>
-        </div>
-        
-        <div class="footer">
-            <p>&copy; ${new Date().getFullYear()} Skill Up Nigeria. All rights reserved.</p>
-            <p style="margin-top: 10px;">
-                <a href="https://skillupnigeria.com/privacy" style="color: #3498db; text-decoration: none;">Privacy Policy</a> | 
-                <a href="https://skillupnigeria.com/terms" style="color: #3498db; text-decoration: none;">Terms of Service</a>
-            </p>
-        </div>
+<body style="font-family: Arial, sans-serif; color: #333;">
+  <div style="max-width:600px;margin:0 auto;padding:24px;background:#fff;">
+    <h2 style="color:#2c3e50;text-align:center;">Welcome to Skill Up Nigeria!</h2>
+    <p>Hello ${data.name},</p>
+    <p>We're thrilled to have you join our community of lifelong learners. At Skill Up Nigeria, we're committed to helping you gain the skills needed to excel in today's competitive world.</p>
+    <ol style="margin:24px 0 24px 20px;">
+      <li>Explore our <a href="https://skillupnigeria.com/courses" style="color:#3498db;">course catalog</a> to find your perfect learning path.</li>
+      <li>Complete your profile for personalized recommendations.</li>
+      <li>Join our <a href="https://community.skillupnigeria.com" style="color:#3498db;">learning community</a> to connect with peers.</li>
+    </ol>
+    <div style="text-align:center;margin:24px 0;">
+      <a href="https://skillupnigeria.com/get-started" style="display:inline-block;padding:12px 28px;background:#3498db;color:#fff;text-decoration:none;border-radius:4px;font-weight:bold;">Start Learning Now</a>
     </div>
+    <p>If you have any questions, our support team is always ready to help at <a href="mailto:support@skillupnigeria.com" style="color:#3498db;">support@skillupnigeria.com</a></p>
+    <p style="margin-top:30px;">Happy learning!<br><strong>The Skill Up Nigeria Team</strong></p>
+    <hr style="margin:32px 0;">
+    <footer style="font-size:12px;color:#888;text-align:center;">
+      &copy; ${new Date().getFullYear()} Skill Up Nigeria. All rights reserved.<br>
+      <a href="https://skillupnigeria.com/privacy" style="color:#3498db;">Privacy Policy</a> |
+      <a href="https://skillupnigeria.com/terms" style="color:#3498db;">Terms of Service</a>
+    </footer>
+  </div>
 </body>
 </html>`;
 
@@ -343,23 +150,22 @@ class EmailService {
    */
   async sendNewCourseForApprovalEmail(course, instructor) {
     const adminEmail = config.email.auth.admin;
-
-    const mailOptions = {
-      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
-      to: adminEmail,
-      subject: `New Course for Approval: ${course.title}`,
-      html: `
+    const subject = `New Course for Approval: ${course.title}`;
+    const html = `
       <h1>New Course Submission</h1>
       <p>Hello Admin,</p>
-      <p>A new course titled "<strong>${course.title}</strong>" has been submitted by instructor <strong>${instructor.name}</strong> and is awaiting your approval.</p>
+      <p>A new course titled "<strong>${course.title}</strong>" has been submitted by instructor <strong>${instructor.firstName} ${instructor.lastName}</strong> and is awaiting your approval.</p>
       <p>Please log in to the admin dashboard to review it.</p>
       <br>
       <p>Thank you,</p>
-      <p>Your App Team</p>
-    `,
-    };
+      <p>Skillup Nigeria</p>
+    `;
 
-    await transporter.sendMail(mailOptions);
+    await this.sendMail({
+      to: adminEmail,
+      subject,
+      html,
+    });
     console.log("Approval notification sent to admin.");
   }
 
@@ -369,7 +175,10 @@ class EmailService {
    */
   async sendCourseApprovalEmail(course) {
     // We need to populate the instructor's email
-    const populatedCourse = await course.populate("createdBy", "name email");
+    const populatedCourse = await course.populate(
+      "createdBy",
+      "firstName lastName email"
+    );
     const instructor = populatedCourse.createdBy;
 
     if (!instructor || !instructor.email) {
@@ -379,23 +188,25 @@ class EmailService {
       return;
     }
 
-    const mailOptions = {
-      from: `"Your App Name" <${process.env.EMAIL_USER}>`,
-      to: instructor.email,
-      subject: `Congratulations! Your Course "${course.title}" has been Approved`,
-      html: `
+    const instructorEmail = instructor.email;
+
+    const subject = `Congratulations! Your Course "${course.title}" has been Approved`;
+    const html = `
       <h1>Course Approved!</h1>
-      <p>Hello ${instructor.name},</p>
+      <p>Hello ${instructor.firstName},</p>
       <p>Great news! Your course, "<strong>${course.title}</strong>", has been reviewed and approved by an administrator.</p>
       <p>It is now live on the platform for learners to enroll in.</p>
       <br>
       <p>Congratulations!</p>
-      <p>Your App Team</p>
-    `,
-    };
+      <p>Skillup Nigeria</p>
+    `;
 
-    await transporter.sendMail(mailOptions);
-    console.log(`Approval email sent to instructor: ${instructor.email}`);
+    await this.sendMail({
+      to: instructorEmail,
+      subject,
+      html,
+    });
+    console.log(`Approval email sent to instructor: ${instructorEmail}`);
   }
 }
 

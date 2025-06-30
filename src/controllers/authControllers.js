@@ -151,6 +151,7 @@ class AuthController {
       res.status(200).json({
         user: loginResponse,
         accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
       });
     } catch (error) {
       next(error);
@@ -199,24 +200,15 @@ class AuthController {
 
   //refresh
   async refresh(req, res) {
-    const authHeader = req.headers.authorization;
-    const headerToken = authHeader?.startsWith("Bearer ")
-      ? authHeader.split(" ")[1]
-      : null;
+    const refreshTokenFromCookie = req.cookies.refreshToken;
 
-    const cookieToken = req.cookies.refreshToken;
-    const oldToken = headerToken || cookieToken;
-
-    if (!oldToken) {
+    if (!refreshTokenFromCookie) {
       return res.status(401).json({ error: "Refresh token required" });
     }
 
-    const tokens = await RefreshToken.find({});
-    tokens.forEach((doc) => {});
-
     try {
       //Verify THE PROVIDED TOKEN ONLY
-      const decoded = await verifyRefreshToken(oldToken);
+      const decoded = await verifyRefreshToken(refreshTokenFromCookie);
       if (!decoded?.userId) {
         return res.status(401).json({ error: "Invalid refresh token" });
       }

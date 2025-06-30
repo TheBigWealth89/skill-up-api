@@ -1,4 +1,6 @@
 import Course from "../model/course.js";
+import User from "../model/user.js";
+import emailService from "../services/emailService.js";
 class CourseController {
   /**
    * @desc    create a course
@@ -18,15 +20,19 @@ class CourseController {
 
       await course.save();
 
+      const instructor = await User.findById(req.user.userId);
+      if (instructor) {
+        emailService.sendNewCourseForApprovalEmail(course, instructor);
+      }
+
+      //Send notification to admin
       // Return course with creator details
       const populatedCourse = await Course.findById(course._id).populate(
         "createdBy",
         "name avatar"
       );
 
-      res.status(201).json({
-        data: populatedCourse,
-      });
+      res.status(201).json({ data: populatedCourse });
     } catch (error) {
       next(error);
     }
@@ -57,7 +63,7 @@ class CourseController {
         data: course,
       });
     } catch (error) {
-      next(error);
+      data: populatedCourse, next(error);
     }
   }
 
@@ -179,24 +185,22 @@ class CourseController {
   async approveCourse(req, res) {
     try {
       // Admin-only middleware should verify role first
-      const course = await Course.findByIdAndUpdate(
-        req.params.id,
-        {
-          isApproved: true,
-          approvedBy: req.user.userId, // Track who approved it
-        },
-        { new: true }
-      );
-
+      const course = await Course.findById(req.params.id);
       if (!course) {
         return res.status(404).json({
           error: "Course not found",
         });
       }
-
+      if (course.isApproved) {
+        return res.status(400).json({
+          error: "Course is already approved.",
+        });
+      }
+      course.isApproved = true;
+      course.approvedBy = req.user.userId;
+      await course.save();
+      emailService.sendCourseApprovalEmail(course).catch(console.error);
       // In real-world: Send notification to instructor
-      // await sendApprovalEmail(course.createdBy);
-
       res.json({
         message: "Course approved ✅",
         data: course,
