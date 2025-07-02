@@ -44,6 +44,10 @@ const userSchema = new mongoose.Schema(
       default: [ROLES.learner],
       required: true,
     },
+    isActive: {
+      type: Boolean,
+      default: true,
+    },
     failedLoginAttempts: { type: Number, default: 0, select: false },
     lockUntil: { type: Date, default: null, select: false },
     passwordResetToken: { type: String, select: false },

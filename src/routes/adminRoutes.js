@@ -18,5 +18,11 @@ adminRoutes.delete(
   checkRoles([ROLES.admin]),
   adminController.deleteUser
 );
+adminRoutes.patch(
+  "/suspend/:targetedUserId",
+  authorization,
+  checkRoles([ROLES.admin]),
+  adminController.suspendUser
+);
 
 export default adminRoutes;
