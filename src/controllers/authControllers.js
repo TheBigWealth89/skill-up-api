@@ -200,16 +200,22 @@ class AuthController {
 
   //refresh
   async refresh(req, res) {
+    console.log("--- [Backend /refresh] Request Received ---");
     const refreshTokenFromCookie = req.cookies.refreshToken;
 
+    console.log("Refresh:", refreshTokenFromCookie);
     if (!refreshTokenFromCookie) {
       return res.status(401).json({ error: "Refresh token required" });
     }
 
     try {
       //Verify THE PROVIDED TOKEN ONLY
+      console.log("[Backend /refresh] SUCCESS: Found refreshToken cookie.");
       const decoded = await verifyRefreshToken(refreshTokenFromCookie);
       if (!decoded?.userId) {
+        console.log(
+          "[Backend /refresh] FAILED: verifyRefreshToken returned null. Token is invalid, expired, or was already used."
+        );
         return res.status(401).json({ error: "Invalid refresh token" });
       }
 
@@ -222,6 +228,9 @@ class AuthController {
       //Save new refresh token (invalidates old one)
       await saveRefreshToken(decoded.userId, tokens.refreshToken);
 
+      console.log(
+        `[Backend /refresh] SUCCESS: Token verified for user ID: ${decoded.userId}`
+      );
       //Set new cookie
       res.cookie("refreshToken", tokens.refreshToken, config.jwt.cookieOptions);
 
@@ -243,9 +252,7 @@ class AuthController {
         await user.save({ validateBeforeSave: false });
         try {
           // Construct the reset URL (adjust for your frontend)
-          const resetURL = `${req.protocol}://${req.get(
-            "host"
-          )}/api/auth/reset-password/${resetToken}`;
+          const resetURL = `${process.env.FRONTEND_URL}/reset-password/${resetToken}`;
           await emailService.sendPasswordResetEmail({
             email: user.email,
             name: user.firstName,
@@ -283,24 +290,28 @@ class AuthController {
   async resetPassword(req, res, next) {
     try {
       // Get the token from the URL and hash it
+      console.log("running ")
       const unhashedToken = req.params.token;
       const hashedToken = crypto
         .createHash("sha256")
         .update(unhashedToken)
         .digest("hex");
 
-      // 2. Find the user with this hashed token and ensure it's not expired
+         console.log({
+      step: "VERIFY",
+      hashedToken_URL: hashedToken,
+      currentTime: new Date(Date.now()),
+    });
+
       const user = await User.findOne({
         passwordResetToken: hashedToken,
-        passwordResetExpires: { $gt: Date.now() }, // $gt means 'greater than'
+        passwordResetExpires: { $gt: Date.now() - 60 * 1000 }, // Check against 1 minute in the past
       }).select("+password +failedLoginAttempts +lockUntil +refreshToken"); // Select fields we need to modify
-
       //  If token is invalid or expired, send error
       if (!user) {
         throw new LoginError("Token is invalid or has expired.", 400);
       }
 
-      // 4. Set the new password & clear reset fields
       const { password, passwordConfirm } = req.body;
       if (!password || !passwordConfirm || password !== passwordConfirm) {
         throw new LoginError("Passwords do not match or are missing.", 400);
@@ -321,7 +332,7 @@ class AuthController {
         res.clearCookie("refreshToken");
       }
 
-      await user.save(); // This will trigger pre-save hook for hashing password
+      await user.save();
       try {
         await emailService.sendSuccessPasswordResetEmail({
           email: user.email,

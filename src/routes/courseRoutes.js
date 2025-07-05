@@ -1,6 +1,7 @@
 import Router from "express";
 import { authorization } from "../middleware/authMiddleware.js";
 import { checkRoles } from "../middleware/checkRole.js";
+import { checkEnrollment } from "../middleware/checkEnrollment.js";
 import { ROLES } from "../model/user.js";
 import courseController from "../controllers/courseController.js";
 
@@ -42,8 +43,15 @@ courseRoutes.patch(
 
 courseRoutes.delete(
   "/:id",
-  checkRoles(ROLES.admin),
+  checkRoles([ROLES.admin]),
   courseController.deleteCourse
+);
+
+courseRoutes.post(
+  "/:id/rate",
+  checkRoles([ROLES.learner]),
+  checkEnrollment,
+  courseController.rateCourse
 );
 
 export default courseRoutes;

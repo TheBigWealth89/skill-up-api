@@ -9,24 +9,33 @@ class CourseController {
    */
   async createCourse(req, res, next) {
     try {
-      if (!req.user.userId) {
-        return res.status(401).json({ message: "Not authenticated" });
+      console.log("Request received");
+      const userId = req.user?.userId;
+      if (!userId) {
+        return res.status(401).json({ message: "Authentication required." });
       }
 
-      const course = new Course({
-        ...req.body,
-        createdBy: req.user.userId, // Authenticated user's ID
-      });
+      console.log("Calling Course Form");
+      // and resources based on the schema we defined.
+      console.log(req.body);
+      const courseData = {
+        ...req.body, // This will include title, description, modules, etc.
+        createdBy: userId,
+      };
 
-      await course.save();
+      console.log("Calling Course Form");
 
-      const instructor = await User.findById(req.user.userId);
+      const course = new Course(courseData);
+      await course.save(); // Mongoose validation runs here
+
+      // --- Post-creation logic (this part is good) ---
+      const instructor = await User.findById(userId);
       if (instructor) {
+        // You might want to pass the instructor's name directly
         emailService.sendNewCourseForApprovalEmail(course, instructor);
       }
 
-      //Send notification to admin
-      // Return course with creator details
+      // Populate the createdBy field for the response
       const populatedCourse = await Course.findById(course._id).populate(
         "createdBy",
         "name avatar"
@@ -34,6 +43,7 @@ class CourseController {
 
       res.status(201).json({ data: populatedCourse });
     } catch (error) {
+      // If validation fails, the error will be caught and passed to your global error handler
       next(error);
     }
   }
@@ -63,7 +73,7 @@ class CourseController {
         data: course,
       });
     } catch (error) {
-      data: populatedCourse, next(error);
+      populatedCourse, next(error);
     }
   }
 
@@ -108,22 +118,16 @@ class CourseController {
    */
   async getCourses(req, res, next) {
     try {
-      // Building query based on filters
-      const query = { isActive: true };
+      const query = { isActive: true, isApproved: true };
 
-      // Filter by category
       if (req.query.category) {
         query.category = req.query.category;
       }
-
-      // Filter by level
       if (req.query.level) {
         query.level = req.query.level;
       }
-
-      // Text search
       if (req.query.search) {
-        query.$text = { $search: req.query.search };
+        query.title = { $regex: req.query.search, $options: "i" };
       }
 
       const page = parseInt(req.query.page) || 1;
@@ -134,18 +138,21 @@ class CourseController {
         .sort({ createdAt: -1 })
         .skip(skip)
         .limit(limit)
-        .populate("createdBy", "name")
-        .lean(); // Lean for better performance
+        .populate("createdBy", "firstName lastName name avatar")
+        .populate("learnersEnrolled", "firstName lastName name")
+        .lean();
 
       const total = await Course.countDocuments(query);
 
       res.json({
+        success: true,
         count: courses.length,
         total,
         pages: Math.ceil(total / limit),
         data: courses,
       });
     } catch (error) {
+      console.error("Error fetching courses:", error);
       next(error);
     }
   }
@@ -230,6 +237,46 @@ class CourseController {
         return res.status(404).json({ error: "Course not found" });
       }
       res.status(200).json({ message: "Course deleted successfully" });
+    } catch (error) {
+      next(error);
+    }
+  }
+
+  /**
+   * @desc    Rate a course
+   * @route   POST /api/course/:id/rate
+   * @access  Enrolled Students
+   */
+  async rateCourse(req, res, next) {
+    try {
+      const { rating, comment } = req.body;
+      const courseId = req.params.id;
+      const userId = req.user.userId;
+
+      const course = await Course.findById(courseId);
+
+      if (!course) {
+        return res.status(404).json({ error: "Course not found" });
+      }
+
+      const existingRating = course.ratings.find(
+        (r) => r.user.toString() === userId.toString()
+      );
+
+      if (existingRating) {
+        // Update existing rating
+        existingRating.rating = rating;
+        existingRating.comment = comment;
+      } else {
+        // Add new rating
+        course.ratings.push({ user: userId, rating, comment });
+      }
+
+      await course.save();
+      res.status(201).json({
+        message: "Course rated successfully",
+        data: course,
+      });
     } catch (error) {
       next(error);
     }
