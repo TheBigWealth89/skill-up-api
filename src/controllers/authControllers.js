@@ -87,7 +87,7 @@ class AuthController {
 
       const user = await User.findOne({
         $or: [{ email: cleanIdentifier }, { username: cleanIdentifier }],
-      }).select("+password +failedLoginAttempts +lockUntil");
+      }).select("+password +failedLoginAttempts +lockUntil +isActive");
 
       // Timing attack-safe comparison
       const dummyHash = await hash("dummyHash", 10);
@@ -95,6 +95,14 @@ class AuthController {
         //This ensures the compare function always runs, preventing timing attacks.
         await compare(password, dummyHash);
         throw new LoginError("Invalid credentials", 401);
+      }
+
+      // Block login if user is suspended
+      if (user.isActive === false) {
+        throw new LoginError(
+          "Account is suspended. Please contact support.",
+          403
+        );
       }
 
       if (user.lockUntil && user.lockUntil > new Date()) {
@@ -290,18 +298,18 @@ class AuthController {
   async resetPassword(req, res, next) {
     try {
       // Get the token from the URL and hash it
-      console.log("running ")
+      console.log("running ");
       const unhashedToken = req.params.token;
       const hashedToken = crypto
         .createHash("sha256")
         .update(unhashedToken)
         .digest("hex");
 
-         console.log({
-      step: "VERIFY",
-      hashedToken_URL: hashedToken,
-      currentTime: new Date(Date.now()),
-    });
+      console.log({
+        step: "VERIFY",
+        hashedToken_URL: hashedToken,
+        currentTime: new Date(Date.now()),
+      });
 
       const user = await User.findOne({
         passwordResetToken: hashedToken,
