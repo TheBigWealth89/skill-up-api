@@ -19,7 +19,7 @@ const PORT = 5000;
 app.use(express.json({ limit: "10mb" })); // Increased body size limit
 app.use(cookieParser());
 // In your backend server.js
-const allowedOrigins = ["https://skill-up-api.onrender.com"]; // Define your allowed origins
+const allowedOrigins = ["https://skillup-nigeria-frontend.vercel.app/"]; // Define your allowed origins
 
 app.use(
   cors({
