@@ -21,7 +21,7 @@ app.use(cookieParser());
 
 app.use(
   cors({
-    origin: "https://skillup-nigeria-frontend.vercel.app/",
+    origin: "https://skillup-nigeria-frontend.vercel.app",
     methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allowed HTTP methods
     credentials: true, // Allow cookies to be sent with requests
   })
