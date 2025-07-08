@@ -83,7 +83,6 @@ console.log({
 };
 
 userSchema.pre("save", function (next) {
-  // Example: Maybe you have logic that tries to *derive* isLocked?
   if (this.lockUntil && this.lockUntil > new Date()) {
     this.isLocked = true;
   } else {

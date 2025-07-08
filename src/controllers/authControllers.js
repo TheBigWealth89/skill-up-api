@@ -159,7 +159,6 @@ class AuthController {
       res.status(200).json({
         user: loginResponse,
         accessToken: tokens.accessToken,
-        refreshToken: tokens.refreshToken,
       });
     } catch (error) {
       next(error);
