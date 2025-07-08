@@ -18,11 +18,27 @@ const app = express();
 const PORT = 5000;
 app.use(express.json({ limit: "10mb" })); // Increased body size limit
 app.use(cookieParser());
+// In your backend server.js
+const allowedOrigins = [
+  "https://skillup-nigeria-frontend.vercel.app",
+  "http://localhost:8080", // for local development
+  undefined, // Allow undefined for tools like Postman or mobile apps
+  null, // Some Vercel pre-rendered/preview requests may send null
+];
+// Define your allowed origins
+
 app.use(
   cors({
-    origin: "https://skillup-nigeria-frontend.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE", "PATCH"], // Allowed HTTP methods
-    credentials: true, // Allow cookies to be sent with requests
+    origin: function (origin, callback) {
+      console.log("CORS check: Request origin is", origin);
+
+      if (!origin || allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        callback(new Error("❌ Not allowed by CORS"));
+      }
+    },
+    credentials: true,
   })
 );
 
